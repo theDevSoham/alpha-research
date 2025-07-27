@@ -26,7 +26,9 @@ def enrich_person_task(person_id: str):
         entity_type="company",
         entity_id=company.id,
         payload=result["data"],
-        source_urls=result["source_urls"]
+        source_urls=result["source_urls"],
+        person_id=person.id,
+    	company_id=company.id,
     ))
 
     # Save search logs
@@ -36,7 +38,9 @@ def enrich_person_task(person_id: str):
             context_snippet_id=snippet_id,
             iteration=i + 1,
             query=log["query"],
-            top_results=log["top_3"]
+            top_results=log["top_3"],
+            person_id=person.id,
+    		company_id=company.id,
         ))
 
     db.commit()

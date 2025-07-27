@@ -19,6 +19,8 @@ class Company(Base):
     name = Column(Text)
     domain = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    snippets = relationship("ContextSnippet", backref="company", foreign_keys="[ContextSnippet.company_id]")
+    logs = relationship("SearchLog", backref="company", foreign_keys="[SearchLog.company_id]")
 
 class Person(Base):
     __tablename__ = "people"
@@ -29,6 +31,8 @@ class Person(Base):
     email = Column(Text, unique=True)
     title = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    snippets = relationship("ContextSnippet", backref="person", foreign_keys="[ContextSnippet.person_id]")
+    logs = relationship("SearchLog", backref="person", foreign_keys="[SearchLog.person_id]")
 
 class ContextSnippet(Base):
     __tablename__ = "context_snippets"
@@ -39,6 +43,8 @@ class ContextSnippet(Base):
     payload = Column(JSONB)
     source_urls = Column(JSONB)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    person_id = Column(UUID(as_uuid=True), ForeignKey("people.id", ondelete="SET NULL"), nullable=True)
+    company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id", ondelete="SET NULL"), nullable=True)
 
 class SearchLog(Base):
     __tablename__ = "search_logs"
@@ -48,3 +54,5 @@ class SearchLog(Base):
     query = Column(Text)
     top_results = Column(JSONB)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    person_id = Column(UUID(as_uuid=True), ForeignKey("people.id", ondelete="SET NULL"), nullable=True)
+    company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id", ondelete="SET NULL"), nullable=True)

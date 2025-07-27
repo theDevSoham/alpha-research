@@ -19,6 +19,13 @@ def get_db():
 
 router = APIRouter()
 
+@router.post("/seed_data")
+def seed_all():
+    from app.db.seed import seed_data
+    seed_data()
+    return {"message": "DB seeded"}
+
+
 @router.post("/enrich/{person_id}")
 def enrich_person(person_id: str):
     task = celery_app.send_task(
