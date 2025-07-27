@@ -4,11 +4,15 @@ from app.db.models import Person, Company, ContextSnippet, SearchLog
 from app.agent.research_agent import run_mock_agent
 import uuid
 import json
+from redis import Redis
+
+r = Redis(host="redis", port=6379, decode_responses=True)
 
 @shared_task(name="app.workers.task.enrich_person_task")
 def enrich_person_task(person_id: str):
     db = SessionLocal()
     person = db.query(Person).filter_by(id=person_id).first()
+    r.set(f"job_progress:{person_id}", 10)
 
     if not person:
         print(f"Person {person_id} not found.")
@@ -19,6 +23,7 @@ def enrich_person_task(person_id: str):
 
     # Run mock agent (we’ll improve this later)
     result = run_mock_agent(person.full_name, person.email, company.domain)
+    r.set(f"job_progress:{person_id}", 60)
 
     snippet_id = uuid.uuid4()
     db.add(ContextSnippet(
@@ -30,6 +35,7 @@ def enrich_person_task(person_id: str):
         person_id=person.id,
     	company_id=company.id,
     ))
+    r.set(f"job_progress:{person_id}", 80)
 
     # Save search logs
     for i, log in enumerate(result["logs"]):
@@ -45,3 +51,4 @@ def enrich_person_task(person_id: str):
 
     db.commit()
     db.close()
+    r.set(f"job_progress:{person_id}", 100)
