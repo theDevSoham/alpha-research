@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Text
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 import uuid
 from .database import Base
 
@@ -22,7 +23,8 @@ class Company(Base):
 class Person(Base):
     __tablename__ = "people"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id"))
+    company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id", ondelete="CASCADE"))
+    company = relationship("Company", backref="employees", )
     full_name = Column(Text)
     email = Column(Text, unique=True)
     title = Column(Text)
