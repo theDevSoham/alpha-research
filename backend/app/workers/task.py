@@ -5,7 +5,7 @@ from app.agent.research_agent import run_mock_agent
 import uuid
 import json
 
-@shared_task
+@shared_task(name="app.workers.task.enrich_person_task")
 def enrich_person_task(person_id: str):
     db = SessionLocal()
     person = db.query(Person).filter_by(id=person_id).first()

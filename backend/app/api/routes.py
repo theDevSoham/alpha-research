@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException
-from app.workers.task import enrich_person_task
+from fastapi import APIRouter
+from celery_worker import celery_app
+from celery.result import AsyncResult
 from uuid import UUID
 from fastapi import Depends
 from sqlalchemy.orm import Session, joinedload
@@ -19,12 +20,21 @@ def get_db():
 router = APIRouter()
 
 @router.post("/enrich/{person_id}")
-def enrich_person(person_id: UUID):
-    try:
-        enrich_person_task.delay(str(person_id))
-        return {"status": "enqueued", "person_id": str(person_id)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+def enrich_person(person_id: str):
+    task = celery_app.send_task(
+        "app.workers.task.enrich_person_task",
+        args=[person_id]
+    )
+    return {"status": "enrichment queued", "task_id": task.id}
+
+@router.get("/status/{task_id}")
+def get_task_status(task_id: str):
+    result = AsyncResult(task_id, app=celery_app)
+    return {
+        "task_id": task_id,
+        "status": result.status,
+        "result": result.result if result.ready() else None
+    }
     
 @router.get("/people", response_model=List[PersonOut])
 def get_people(db: Session = Depends(get_db)):

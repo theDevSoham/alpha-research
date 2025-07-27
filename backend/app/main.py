@@ -6,4 +6,4 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Alpha Research Platform")
 
-app.include_router(api_router)
+app.include_router(api_router, prefix="/api")
