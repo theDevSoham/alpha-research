@@ -297,12 +297,6 @@ erDiagram
 
 ---
 
-## 🎥 Demo Video
-
-Included as `demo.mp4` or available via Loom link.
-
----
-
 ## ✅ Done Criteria Summary
 
 | Item                             | Status |
