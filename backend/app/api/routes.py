@@ -4,6 +4,7 @@ from celery.result import AsyncResult
 from uuid import UUID
 from fastapi import Depends
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import desc
 from app.db.database import SessionLocal
 from app.db.models import Person, ContextSnippet
 from app.schemas import PersonOut, ContextSnippetOut
@@ -49,7 +50,12 @@ def get_people(db: Session = Depends(get_db)):
 
 @router.get("/snippets/{company_id}", response_model=List[ContextSnippetOut])
 def get_snippets_for_company(company_id: UUID, db: Session = Depends(get_db)):
-    return db.query(ContextSnippet).filter_by(entity_type="company", entity_id=company_id).all()
+    return (
+        db.query(ContextSnippet)
+        .filter_by(entity_type="company", entity_id=company_id)
+        .order_by(desc(ContextSnippet.created_at))
+        .all()
+    )
 
 @router.get("/healthz")
 def health_check():

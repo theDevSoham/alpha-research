@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getPeople, enrichPerson } from "../services/api";
 import Loader from "./Loader";
 
-interface IPeople {
+export interface IPeople {
   id: string;
   full_name: string;
   email: string;
@@ -14,7 +14,9 @@ interface IPeople {
   created_at: string;
 }
 
-export default function PeopleList() {
+const PeopleList: React.FC<{
+  onEnrichTrigger?: (jobId: string, people: IPeople) => void;
+}> = ({ onEnrichTrigger }) => {
   const [people, setPeople] = useState<IPeople[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -32,8 +34,18 @@ export default function PeopleList() {
   }, []);
 
   const handleEnrich = async (person: IPeople) => {
-    await enrichPerson(person.id);
-    alert("Research agent triggered!");
+    try {
+      const res = await enrichPerson(person.id);
+      if (res.status !== 200) {
+        alert("Failed to enrich");
+        return;
+      }
+      alert("Research agent triggered!");
+      if (onEnrichTrigger) onEnrichTrigger(res.data?.task_id, person);
+    } catch (error) {
+      alert("Error: Data cannot be enriched at the moment");
+      console.error(error);
+    }
   };
 
   return (
@@ -60,7 +72,7 @@ export default function PeopleList() {
               </div>
               <button
                 onClick={() => handleEnrich(p)}
-                className="bg-blue-500 text-white rounded"
+                className="bg-blue-500 text-white rounded cursor-pointer"
                 style={{ padding: "4px 8px" }}
               >
                 Run Research
@@ -71,4 +83,6 @@ export default function PeopleList() {
       )}
     </div>
   );
-}
+};
+
+export default PeopleList;

@@ -14,7 +14,7 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api/, ""),
       },
       "/ws": {
-        target: "ws://localhost:8000",
+        target: "ws://localhost:8000/ws",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/ws/, ""),
         ws: true,

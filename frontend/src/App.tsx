@@ -1,11 +1,9 @@
-import PeopleList from "./components/PeopleList";
+import Home from "./pages/Home";
 
 const App = () => {
   return (
     <div className="w-full min-h-10">
-      <div className="max-w-2xl mt-10" style={{ margin: "auto" }}>
-        <PeopleList />
-      </div>
+      <Home />
     </div>
   );
 };
