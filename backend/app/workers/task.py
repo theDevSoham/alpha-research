@@ -8,22 +8,22 @@ from redis import Redis
 
 r = Redis(host="redis", port=6379, decode_responses=True)
 
-@shared_task(name="app.workers.task.enrich_person_task")
-def enrich_person_task(person_id: str):
+@shared_task(bind=True, name="app.workers.task.enrich_person_task")
+def enrich_person_task(self, person_id: str):
+    task_id = self.request.id  # Celery-generated job ID
     db = SessionLocal()
-    person = db.query(Person).filter_by(id=person_id).first()
-    r.set(f"job_progress:{person_id}", 10)
+    r.set(f"job_progress:{task_id}", 10)
 
+    person = db.query(Person).filter_by(id=person_id).first()
     if not person:
-        print(f"Person {person_id} not found.")
+        r.set(f"job_progress:{task_id}", -1)
         db.close()
         return
 
     company = db.query(Company).filter_by(id=person.company_id).first()
 
-    # Run mock agent (we’ll improve this later)
     result = run_mock_agent(person.full_name, person.email, company.domain)
-    r.set(f"job_progress:{person_id}", 60)
+    r.set(f"job_progress:{task_id}", 60)
 
     snippet_id = uuid.uuid4()
     db.add(ContextSnippet(
@@ -33,11 +33,10 @@ def enrich_person_task(person_id: str):
         payload=result["data"],
         source_urls=result["source_urls"],
         person_id=person.id,
-    	company_id=company.id,
+        company_id=company.id,
     ))
-    r.set(f"job_progress:{person_id}", 80)
+    r.set(f"job_progress:{task_id}", 80)
 
-    # Save search logs
     for i, log in enumerate(result["logs"]):
         db.add(SearchLog(
             id=uuid.uuid4(),
@@ -46,9 +45,10 @@ def enrich_person_task(person_id: str):
             query=log["query"],
             top_results=log["top_3"],
             person_id=person.id,
-    		company_id=company.id,
+            company_id=company.id,
         ))
 
     db.commit()
     db.close()
-    r.set(f"job_progress:{person_id}", 100)
+    r.set(f"job_progress:{task_id}", 100)
+
