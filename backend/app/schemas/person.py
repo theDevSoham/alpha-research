@@ -6,8 +6,9 @@ class CompanyInfo(BaseModel):
     id: UUID
     name: str
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }
 
 class PersonOut(BaseModel):
     id: UUID
@@ -17,5 +18,6 @@ class PersonOut(BaseModel):
     company: CompanyInfo
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }
