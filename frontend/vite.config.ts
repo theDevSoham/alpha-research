@@ -13,6 +13,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ""),
       },
+      "/dev": {
+        target: "http://localhost:8000/dev",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/dev/, ""),
+      },
       "/ws": {
         target: "ws://localhost:8000/ws",
         changeOrigin: true,

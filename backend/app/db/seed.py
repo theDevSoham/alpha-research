@@ -20,24 +20,24 @@ def seed_data():
     company = Company(
         id=uuid.uuid4(),
         campaign_id=campaign.id,
-        name="Acme Corp",
-        domain="acme.com"
+        name="PluginLive",
+        domain="pluginlive.com"
     )
     db.add(company)
 
     person1 = Person(
         id=uuid.uuid4(),
         company_id=company.id,
-        full_name="Alice Johnson",
-        email="alice@acme.com",
-        title="CTO"
+        full_name="Kushal Siddesh",
+        email="kushal.siddesh@pluginlive.com",
+        title="Head of Product"
     )
     person2 = Person(
         id=uuid.uuid4(),
         company_id=company.id,
-        full_name="Bob Smith",
-        email="bob@acme.com",
-        title="VP of Product"
+        full_name="Joslyn Gomes",
+        email="joslyn@pluginlive.com",
+        title="Assistant Manager"
     )
 
     db.add_all([person1, person2])

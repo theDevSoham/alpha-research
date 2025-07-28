@@ -19,7 +19,6 @@ async def websocket_endpoint(websocket: WebSocket, job_id: str):
         while True:
             if websocket.client_state == WebSocketState.CONNECTED:
                 progress = await r.get(f"job_progress:{job_id}") or "0"
-                print(progress)
                 await websocket.send_json({"progress": int(progress)})
                 if progress == "100":
                     await asyncio.sleep(1)  # allow client to receive final progress

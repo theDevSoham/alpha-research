@@ -1,31 +1,68 @@
+# research_agent.py
 import time
-import random
+import os
+from serpapi import GoogleSearch
 
-def run_mock_agent(full_name, email, domain):
-    query_base = f"{domain} company info"
+SERP_API_KEY = os.environ.get("SERP_API_KEY")
 
+def run_serp_agent(full_name, email, domain):
     logs = []
-    for i in range(3):
-        time.sleep(3)  # ⏳ Add delay per iteration (3 * 3 = 9 seconds)
-        logs.append({
-            "query": f"{query_base} iteration {i+1}",
-            "top_3": [
-                {"url": f"https://example.com/article-{i}", "snippet": f"Info snippet {i}"}
-                for i in range(3)
-            ]
-        })
+    all_urls = set()
 
-    # Simulate a small final delay
-    time.sleep(random.uniform(1.0, 2.5))  # total ~10–12 seconds
+    # Dynamic query patterns using full name, email, and domain
+    queries = [
+        f"{full_name} at {domain} overview",
+        f"{full_name} email {email} company background",
+        f"What does {domain} do {full_name}"
+    ]
+
+    for i, query in enumerate(queries):
+        params = {
+            "engine": "google",
+            "q": query,
+            "location": "",
+            "hl": "en",
+            "gl": "us",
+            "google_domain": "google.com",
+            "api_key": SERP_API_KEY,
+            "num": 5
+        }
+
+        try:
+            search = GoogleSearch(params)
+            results = search.get_dict()
+
+            top_results = []
+            for result in results.get("organic_results", [])[:3]:
+                url = result.get("link")
+                snippet = result.get("snippet") or "No snippet"
+                top_results.append({"url": url, "snippet": snippet})
+                if url:
+                    all_urls.add(url)
+
+            logs.append({
+                "query": query,
+                "top_3": top_results
+            })
+
+        except Exception as e:
+            logs.append({
+                "query": query,
+                "top_3": [{"url": "", "snippet": f"Error: {str(e)}"}]
+            })
+
+        time.sleep(2)  # Delay to avoid rate limits
+
+    synthesized_data = {
+        "company_value_prop": "N/A",
+        "product_names": [],
+        "pricing_model": "N/A",
+        "key_competitors": [],
+        "company_domain": domain
+    }
 
     return {
-        "data": {
-            "company_value_prop": "We automate boring tasks.",
-            "product_names": ["BotSuite", "AutoMagic"],
-            "pricing_model": "Subscription",
-            "key_competitors": ["CompetitorX", "CompetitorY"],
-            "company_domain": domain
-        },
-        "source_urls": [log["top_3"][0]["url"] for log in logs],
+        "data": synthesized_data,
+        "source_urls": list(all_urls),
         "logs": logs
     }

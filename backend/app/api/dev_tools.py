@@ -4,6 +4,13 @@ from app.db.models import Campaign, Company, Person, ContextSnippet, SearchLog
 
 router = APIRouter()
 
+@router.post("/reseed")
+def seed_all():
+    unseed_data()
+    from app.db.seed import seed_data
+    seed_data()
+    return {"message": "DB seeded"}
+
 @router.post("/unseed")
 def unseed_data():
     db = SessionLocal()
