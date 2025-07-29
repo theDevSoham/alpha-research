@@ -21,7 +21,13 @@ export default function ProgressBar({ jobId, onComplete }: Props) {
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.progress !== undefined) {
-        setProgress(data.progress);
+        setProgress(data.progress > 0 ? data.progress : 0);
+
+        if (data.progress === -1) {
+          socket.close();
+          alert("Task failed!");
+        }
+
         if (data.progress === 100) onComplete();
       }
     };

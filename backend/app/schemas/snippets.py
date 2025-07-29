@@ -3,12 +3,55 @@ from uuid import UUID
 from datetime import datetime
 from typing import List
 
+from pydantic import BaseModel, HttpUrl
+from typing import List, Optional
+
+
+class PersonSchema(BaseModel):
+    full_name: str
+    profile_url: HttpUrl
+    title: str
+    current_company: str
+    location: str
+    summary: str
+    social_presence: Optional[dict]  # or use a more structured schema if known
+
+
+class SearchRankingSchema(BaseModel):
+    top_result_position: int
+    source: str
+    search_query: str
+    search_url: HttpUrl
+
+
+class PublicWebPresenceSchema(BaseModel):
+    official_website_found: bool
+    search_rankings: dict  # or use Dict[str, SearchRankingSchema] for multiple engines
+
+
+class CompanySchema(BaseModel):
+    name: str
+    role_of_person: str
+    mentioned_by: str
+    public_web_presence: PublicWebPresenceSchema
+    product_description_available: bool
+    description: str
+    requires_further_research: bool
+
+
+class MetaSchema(BaseModel):
+    data_source: str
+    query: str
+    timestamp_utc: str
+    total_results: int
+    api_url: HttpUrl
+
+
 class PayloadSchema(BaseModel):
-    company_value_prop: str
-    product_names: List[str]
-    pricing_model: str
-    key_competitors: List[str]
-    company_domain: str
+    person: PersonSchema
+    company: CompanySchema
+    meta: MetaSchema
+
 
 class ContextSnippetOut(BaseModel):
     id: UUID

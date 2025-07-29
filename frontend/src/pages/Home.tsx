@@ -25,10 +25,7 @@ const Home = () => {
         return;
       }
       console.log("Enrich: ", data);
-      setEnrichResult({
-        ...data?.[0]?.payload,
-        source_urls: data?.[0]?.source_urls,
-      });
+      setEnrichResult(data[0]);
     } catch (error) {
       console.error(error);
       alert("Error: Feching enrich data failed");
